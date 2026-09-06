@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FaceTime - CR7</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .call-container {
+      position: relative;
+      width: 100%;
+      max-width: 450px;
+      height: 100vh;
+      background: #111;
+      overflow: hidden;
+    }
+    /* Ronaldo Main Video */
+    #ronaldo-video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    /* User Webcam Preview */
+    #user-video {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 110px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.2);
+      transform: scaleX(-1); /* Mirror camera */
+    }
+    /* UI Overlay */
+    .caller-info {
+      position: absolute;
+      top: 40px;
+      left: 20px;
+      color: white;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+    .caller-info h2 { font-size: 22px; font-weight: 600; }
+    .caller-info p { font-size: 14px; opacity: 0.8; }
+
+    /* Controls Bar */
+    .controls {
+      position: absolute;
+      bottom: 40px;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+    .btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      color: white;
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+    .btn-action { background: rgba(255,255,255,0.2); }
+    .btn-end { background: #ff3b30; }
+
+    /* Incoming Call Screen */
+    .incoming-screen {
+      position: absolute;
+      inset: 0;
+      background: #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      padding: 60px 0;
+      z-index: 10;
+    }
+    .avatar {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: #333;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .btn-accept { background: #34c759; }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <div class="call-container">
+    <div id="incoming" class="incoming-screen">
+      <div style="text-align:center; color:white;">
+        <div class="avatar">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/8/8c/Cristiano_Ronaldo_2018.jpg" alt="Ronaldo">
+        </div>
+        <h2>Cristiano Ronaldo</h2>
+        <p style="opacity:0.6; margin-top:5px;">FaceTime Video...</p>
+      </div>
+      <div style="display:flex; gap:40px;">
+        <button class="btn btn-end" onclick="alert('Call declined')">✕</button>
+        <button class="btn btn-accept" onclick="acceptCall()">📞</button>
+      </div>
+    </div>
+
+    <video id="ronaldo-video" loop playsinline src="ronaldo.mp4"></video>
+    <video id="user-video" autoplay playsinline muted></video>
+
+    <div class="caller-info">
+      <h2>Cristiano Ronaldo</h2>
+      <p id="timer">00:00</p>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-action" onclick="toggleMute()">🎙️</button>
+      <button class="btn btn-end" onclick="location.reload()">📞</button>
+    </div>
+  </div>
+
+  <script>
+    let seconds = 0;
+    let timerInterval;
+
+    async function acceptCall() {
+      document.getElementById('incoming').classList.add('hidden');
+      const ronaldoVideo = document.getElementById('ronaldo-video');
+      ronaldoVideo.play();
+
+      // Access User Camera
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        document.getElementById('user-video').srcObject = stream;
+      } catch (err) {
+        console.warn("Camera access denied or unavailable:", err);
+      }
+
+      // Start Call Timer
+      timerInterval = setInterval(() => {
+        seconds++;
+        const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+        const secs = String(seconds % 60).padStart(2, '0');
+        document.getElementById('timer').innerText = `${mins}:${secs}`;
+      }, 1000);
+    }
+
+    function toggleMute() {
+      const userVideo = document.getElementById('user-video');
+      if (userVideo.srcObject) {
+        const audioTrack = userVideo.srcObject.getAudioTracks()[0];
+        if (audioTrack) audioTrack.enabled = !audioTrack.enabled;
+      }
+    }
+  </script>
+</body>
+</html>
